@@ -91,6 +91,15 @@ PuppetLint.new_check(:trailing_comma) do
     end.call
   end
 
+  def param_indexes
+    (class_indexes + defined_type_indexes).filter_map do |definition|
+      params = definition[:param_tokens]
+      next if params.nil? || params.empty?
+
+      { tokens: params + [params.last.next_token] }
+    end
+  end
+
   def check_elem(elem, except_type)
     lbo_token = elem[:tokens][-1].prev_code_token
 
@@ -118,6 +127,11 @@ PuppetLint.new_check(:trailing_comma) do
     # Resource and class declarations
     resource_indexes.each do |resource|
       check_elem(resource, :COLON)
+    end
+
+    # Class and defined type parameters
+    param_indexes.each do |params|
+      check_elem(params, :LPAREN)
     end
 
     # Arrays

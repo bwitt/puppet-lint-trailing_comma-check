@@ -610,5 +610,70 @@ describe 'trailing_comma' do
         end
       end
     end
+
+    context 'with class and defined type parameters' do
+      let(:code) do
+        <<-EOS
+        class foo (
+          String $bar = 'baz'
+        ) {
+        }
+
+        class foo::single (String $bar = 'baz') {
+        }
+
+        class foo::empty () {
+        }
+
+        define foo::bar (
+          String $a,
+          String $b
+        ) {
+        }
+
+        define foo::baz (
+          String $a,
+        ) {
+        }
+        EOS
+      end
+
+      it 'detects two problems' do
+        expect(problems).to have(2).problems
+      end
+
+      it 'creates warnings' do
+        expect(problems).to contain_fixed(msg).on_line(2).in_column(30)
+        expect(problems).to contain_fixed(msg).on_line(14).in_column(20)
+      end
+
+      it 'adds trailing commas' do
+        expect(manifest).to eq(
+          <<-EOS,
+        class foo (
+          String $bar = 'baz',
+        ) {
+        }
+
+        class foo::single (String $bar = 'baz') {
+        }
+
+        class foo::empty () {
+        }
+
+        define foo::bar (
+          String $a,
+          String $b,
+        ) {
+        }
+
+        define foo::baz (
+          String $a,
+        ) {
+        }
+        EOS
+        )
+      end
+    end
   end
 end

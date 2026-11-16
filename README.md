@@ -49,6 +49,13 @@ file { '/etc/file':
 }
 ```
 
+```puppet
+class example (
+  String $content
+) {
+}
+```
+
 #### What you should have done
 
 ```puppet
@@ -63,6 +70,13 @@ file { '/etc/file':
   content => @(EOF),
   Content
   | EOF
+}
+```
+
+```puppet
+class example (
+  String $content,
+) {
 }
 ```
 
