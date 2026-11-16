@@ -610,5 +610,44 @@ describe 'trailing_comma' do
         end
       end
     end
+
+    context 'with a nested hash in resource defaults' do
+      let(:code) do
+        <<-EOS
+        class foo {
+          Exec {
+            environment => {
+              'FOO' => 'bar'
+            },
+            path        => '/bin'
+          }
+        }
+        EOS
+      end
+
+      it 'detects two problems' do
+        expect(problems).to have(2).problems
+      end
+
+      it 'creates warnings' do
+        expect(problems).to contain_fixed(msg).on_line(4).in_column(29)
+        expect(problems).to contain_fixed(msg).on_line(6).in_column(34)
+      end
+
+      it 'adds trailing commas' do
+        expect(manifest).to eq(
+          <<-EOS,
+        class foo {
+          Exec {
+            environment => {
+              'FOO' => 'bar',
+            },
+            path        => '/bin',
+          }
+        }
+        EOS
+        )
+      end
+    end
   end
 end

@@ -74,11 +74,15 @@ PuppetLint.new_check(:trailing_comma) do
                     # Or a conditional matching a type:
                     !%i[MATCH NOMATCH].include?(token.prev_code_token.type)
 
+        level = 0
         real_idx = 0
 
         tokens[token_idx + 1..-1].each_with_index do |cur_token, cur_token_idx|
           real_idx = token_idx + 1 + cur_token_idx
-          break if cur_token.type == :RBRACE
+
+          level += 1 if cur_token.type == :LBRACE
+          level -= 1 if cur_token.type == :RBRACE
+          break if level.zero? && cur_token.type == :RBRACE
         end
 
         defaults << {
