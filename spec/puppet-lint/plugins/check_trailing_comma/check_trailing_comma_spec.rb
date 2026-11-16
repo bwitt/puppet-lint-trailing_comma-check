@@ -610,5 +610,35 @@ describe 'trailing_comma' do
         end
       end
     end
+
+    context 'with resource defaults at the start of the manifest' do
+      let(:code) do
+        <<~EOS
+          # site.pp
+          File {
+            backup => false
+          }
+        EOS
+      end
+
+      it 'detects a problem' do
+        expect(problems).to have(1).problem
+      end
+
+      it 'creates a warning' do
+        expect(problems).to contain_fixed(msg).on_line(3).in_column(18)
+      end
+
+      it 'adds a trailing comma' do
+        expect(manifest).to eq(
+          <<~EOS,
+            # site.pp
+            File {
+              backup => false,
+            }
+          EOS
+        )
+      end
+    end
   end
 end
