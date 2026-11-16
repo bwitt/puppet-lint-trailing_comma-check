@@ -610,5 +610,40 @@ describe 'trailing_comma' do
         end
       end
     end
+
+    context 'when another check removed the newline before fixing' do
+      let(:code) do
+        <<-EOS
+        class { 'foo':
+          bar => {
+            'baz' => 'qux',
+          }
+
+        }
+        EOS
+      end
+
+      it 'adds a trailing comma after the last element' do
+        linter = PuppetLint::Checks.new
+        linter.load_data('', code)
+        check = PuppetLint.configuration.check_object[:trailing_comma].new
+        check.run
+
+        # e.g. manifest_whitespace_closing_brace_before removes the empty line
+        rbrace = PuppetLint::Data.tokens.find { |t| t.type == :RBRACE }
+        PuppetLint::Data.delete(rbrace.next_token)
+
+        expect(check.fix_problems).to contain_fixed(msg).on_line(4).in_column(12)
+        expect(linter.manifest).to eq(
+          <<-EOS,
+        class { 'foo':
+          bar => {
+            'baz' => 'qux',
+          },
+        }
+        EOS
+        )
+      end
+    end
   end
 end

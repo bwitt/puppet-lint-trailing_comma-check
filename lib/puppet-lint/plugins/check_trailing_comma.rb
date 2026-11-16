@@ -109,7 +109,7 @@ PuppetLint.new_check(:trailing_comma) do
         message: 'missing trailing comma after last element',
         line: lbo_token.next_token.line,
         column: lbo_token.next_token.column,
-        token: lbo_token.next_token,
+        token: lbo_token,
       }
     end
   end
@@ -137,14 +137,15 @@ PuppetLint.new_check(:trailing_comma) do
   end
 
   def fix(problem)
+    # Insert after the last element rather than before the following
+    # newline, which may have been removed by another check's fix
     comma = PuppetLint::Lexer::Token.new(
       :COMMA,
       ',',
-      problem[:token].line,
-      problem[:token].column,
+      problem[:line],
+      problem[:column],
     )
 
-    idx = tokens.index(problem[:token])
-    tokens.insert(idx, comma)
+    add_token(tokens.index(problem[:token]) + 1, comma)
   end
 end
